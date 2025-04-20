@@ -3,7 +3,7 @@
 case "$OSTYPE" in
     msys*)    python=python ;;
     cygwin*)  python=python ;;
-    *)        python=python3 ;;
+    *)        python=python3.11 ;;
 esac
 
 PATH_TO_MANAGE_PY=$(find ../ -name "manage.py" -not -path "*/env" -not -path "*/venv");
