@@ -33,9 +33,7 @@ class RecipeIngredientSerializer(serializers.ModelSerializer):
 
     id = serializers.ReadOnlyField(source='ingredient.id')
     name = serializers.ReadOnlyField(source='ingredient.name')
-    measurement_unit = serializers.ReadOnlyField(
-        source='ingredient.measurement_unit'
-    )
+    measurement_unit = serializers.ReadOnlyField(source='ingredient.measurement_unit')
 
     class Meta:
         model = RecipeIngredient
@@ -57,13 +55,10 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     tags = TagSerializer(many=True, read_only=True)
     author = CustomUserSerializer(read_only=True)
-    ingredients = RecipeIngredientReadSerializer(
-        source='recipe_ingredients',
-        many=True,
-        read_only=True
-    )
+    ingredients = RecipeIngredientSerializer(many=True, read_only=True, source='recipe_ingredients')
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
+    image = serializers.SerializerMethodField()
 
     class Meta:
         model = Recipe
@@ -73,10 +68,14 @@ class RecipeSerializer(serializers.ModelSerializer):
             'name', 'image', 'text', 'cooking_time'
         )
 
-    def get_ingredients(self, obj):
-        """Get ingredients with amounts for the recipe."""
-        recipe_ingredients = obj.recipe_ingredients.all()
-        return RecipeIngredientSerializer(recipe_ingredients, many=True).data
+    def get_image(self, obj):
+        """Get the full URL of the image."""
+        if obj.image:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.image.url)
+            return obj.image.url
+        return None
 
     def get_is_favorited(self, obj):
         """Check if recipe is in user's favorites."""
@@ -84,6 +83,15 @@ class RecipeSerializer(serializers.ModelSerializer):
         if not request or request.user.is_anonymous:
             return False
         return Favorite.objects.filter(
+            user=request.user, recipe=obj
+        ).exists()
+
+    def get_is_in_shopping_cart(self, obj):
+        """Check if recipe is in user's shopping cart."""
+        request = self.context.get('request')
+        if not request or request.user.is_anonymous:
+            return False
+        return ShoppingCart.objects.filter(
             user=request.user, recipe=obj
         ).exists()
 
@@ -181,6 +189,10 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
                 'Cooking time must be at least 1 minute'
             )
         return value
+
+    def to_representation(self, instance):
+        """Convert instance to proper output format."""
+        return RecipeSerializer(instance, context=self.context).data
 
     def create_ingredients(self, recipe, ingredients_data):
         """Create ingredient objects for the recipe."""

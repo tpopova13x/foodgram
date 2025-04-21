@@ -25,13 +25,23 @@ class CustomUserSerializer(UserSerializer):
     """Serializer for user model."""
 
     is_subscribed = serializers.SerializerMethodField()
+    avatar = serializers.SerializerMethodField()
 
     class Meta:
         model = User
         fields = (
-            'email', 'id', 'username', 'first_name',
-            'last_name', 'is_subscribed', 'avatar'
+            'id', 'username', 'first_name', 'last_name',
+            'email', 'is_subscribed', 'avatar'
         )
+
+    def get_avatar(self, obj):
+        """Get the full URL of the avatar or None if not set."""
+        if obj.avatar:
+            request = self.context.get('request')
+            if request:
+                return request.build_absolute_uri(obj.avatar.url)
+            return obj.avatar.url
+        return None
 
     def get_is_subscribed(self, obj):
         """Check if authenticated user subscribed to the author."""

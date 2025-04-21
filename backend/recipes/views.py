@@ -4,7 +4,7 @@ from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import status, viewsets, filters
+from rest_framework import status, viewsets, filters, permissions
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
@@ -155,16 +155,16 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @action(
         detail=True,
         methods=['get'],
-        permission_classes=[AllowAny]
+        url_path='get-link',
+        permission_classes=[permissions.AllowAny]
     )
     def get_link(self, request, pk=None):
-        """Get short link for recipe."""
         recipe = get_object_or_404(Recipe, id=pk)
         base_url = request.build_absolute_uri('/').rstrip('/')
         short_link = f"{base_url}/s/{recipe.id}"
 
         return Response(
-            {'short-link': short_link},
+            {"short-link": short_link},
             status=status.HTTP_200_OK
         )
 
