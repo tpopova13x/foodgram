@@ -50,6 +50,39 @@ class RecipeViewSet(viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
 
+    def update(self, request, *args, **kwargs):
+        """Override update method to ensure all required fields are provided."""
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+
+        # For non-partial updates, ensure required fields are present
+        if not partial:
+            missing_fields = []
+
+            if 'ingredients' not in request.data:
+                missing_fields.append('ingredients')
+
+            if 'tags' not in request.data:
+                missing_fields.append('tags')
+
+            if 'image' not in request.data:
+                missing_fields.append('image')
+            elif not request.data['image']:
+                return Response(
+                    {'image': ['This field may not be blank']},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+
+            if missing_fields:
+                error_response = {field: ['This field is required'] for field in missing_fields}
+                return Response(error_response, status=status.HTTP_400_BAD_REQUEST)
+
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        return Response(serializer.data)
+
     def get_serializer_class(self):
         """Return serializer class based on action."""
         if self.action in ('create', 'update', 'partial_update'):

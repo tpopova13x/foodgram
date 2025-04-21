@@ -164,6 +164,15 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
                 'tags': 'This field is required when updating a recipe'
             })
 
+        if 'image' not in data:
+            raise serializers.ValidationError({
+                'image': 'This field is required when updating a recipe'
+            })
+        elif not data['image']:
+            raise serializers.ValidationError({
+                'image': 'This field may not be blank'
+            })
+
         return super().validate(data)
 
     def validate_ingredients(self, value):
