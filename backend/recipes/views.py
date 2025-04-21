@@ -60,6 +60,12 @@ class RecipeViewSet(viewsets.ModelViewSet):
         """Create recipe with current user as author."""
         serializer.save(author=self.request.user)
 
+    def get_serializer_context(self):
+        """Add request to serializer context."""
+        context = super().get_serializer_context()
+        context['request'] = self.request
+        return context
+
     @action(
         detail=True,
         methods=['post', 'delete'],

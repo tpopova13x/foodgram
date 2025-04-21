@@ -1,5 +1,5 @@
 # recipes/serializers.py
-
+from django.core.validators import MinValueValidator
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 from django.db import transaction
@@ -69,13 +69,13 @@ class RecipeSerializer(serializers.ModelSerializer):
         )
 
     def get_image(self, obj):
-        """Get the full URL of the image."""
-        if obj.image:
-            request = self.context.get('request')
+        """Return full URL for image."""
+        request = self.context.get('request')
+        if obj.image and hasattr(obj.image, 'url'):
             if request:
                 return request.build_absolute_uri(obj.image.url)
             return obj.image.url
-        return None
+        return ''  # Return empty string if no image
 
     def get_is_favorited(self, obj):
         """Check if recipe is in user's favorites."""
@@ -107,7 +107,9 @@ class RecipeSerializer(serializers.ModelSerializer):
 
 class RecipeIngredientWriteSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField()
-    amount = serializers.IntegerField()
+    amount = serializers.IntegerField(
+        validators=[MinValueValidator(1, message="Amount must be at least 1")]
+    )
 
     class Meta:
         model = RecipeIngredient
@@ -125,6 +127,11 @@ class RecipeIngredientWriteSerializer(serializers.ModelSerializer):
         print(f"data content: {data}")
         return super().to_internal_value(data)
 
+    def validate_amount(self, value):
+        """Double check validation for amount field."""
+        if value < 1:
+            raise serializers.ValidationError("Amount must be at least 1")
+        return value
 
 class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
     """Serializer for creating and updating recipes."""
@@ -166,6 +173,11 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
                 'Ingredients must be unique'
             )
 
+        for item in value:
+            if item['amount'] < 1:
+                raise serializers.ValidationError(
+                    'Amount must be at least 1'
+                )
         return value
 
     def validate_tags(self, value):
