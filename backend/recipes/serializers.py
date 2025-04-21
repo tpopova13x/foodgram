@@ -274,8 +274,19 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
 
 
 class RecipeShortSerializer(serializers.ModelSerializer):
-    """Serializer for simplified recipe representation."""
+    """Serializer for simplified recipe representation in subscriptions."""
+
+    image = serializers.SerializerMethodField()
 
     class Meta:
         model = Recipe
         fields = ('id', 'name', 'image', 'cooking_time')
+
+    def get_image(self, obj):
+        """Return full URL for image as a string."""
+        request = self.context.get('request')
+        if obj.image and hasattr(obj.image, 'url'):
+            if request:
+                return request.build_absolute_uri(obj.image.url)
+            return obj.image.url
+        return ''  # Return empty string if no image
