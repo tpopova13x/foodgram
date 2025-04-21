@@ -140,7 +140,7 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
         queryset=Tag.objects.all(),
         many=True
     )
-    ingredients = RecipeIngredientWriteSerializer(many=True, write_only=True)
+    ingredients = RecipeIngredientWriteSerializer(many=True, write_only=True, required=True)
     image = Base64ImageField()
 
     class Meta:
@@ -149,6 +149,22 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
             'id', 'tags', 'ingredients',
             'name', 'image', 'text', 'cooking_time'
         )
+
+    def validate(self, data):
+        """Validate that required fields are present for both create and update operations."""
+        # For update operations, check that ingredients are provided
+        if self.instance and 'ingredients' not in data:
+            raise serializers.ValidationError({
+                'ingredients': 'This field is required when updating a recipe'
+            })
+
+        # Similarly for tags
+        if self.instance and 'tags' not in data:
+            raise serializers.ValidationError({
+                'tags': 'This field is required when updating a recipe'
+            })
+
+        return super().validate(data)
 
     def validate_ingredients(self, value):
         """Validate ingredients."""
