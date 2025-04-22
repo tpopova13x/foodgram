@@ -3,10 +3,12 @@
 from django.shortcuts import get_object_or_404
 from rest_framework import status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.exceptions import NotAuthenticated, AuthenticationFailed
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from django.contrib.auth import get_user_model
 from djoser.views import UserViewSet
+from rest_framework.views import APIView
 
 from .models import Subscription
 from .serializers import (
@@ -19,6 +21,23 @@ from .pagination import CustomPageNumberPagination
 
 User = get_user_model()
 
+
+class UserMeView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        """Return authenticated user's information."""
+        serializer = CustomUserSerializer(request.user, context={'request': request})
+        return Response(serializer.data)
+
+    def handle_exception(self, exc):
+        # Override handle_exception to return 401 for authentication errors
+        if isinstance(exc, (NotAuthenticated, AuthenticationFailed)):
+            return Response(
+                {"detail": "Authentication credentials were not provided."},
+                status=status.HTTP_401_UNAUTHORIZED
+            )
+        return super().handle_exception(exc)
 
 class CustomUserViewSet(UserViewSet):
     """ViewSet for users."""

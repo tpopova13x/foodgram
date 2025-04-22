@@ -4,7 +4,7 @@ from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import status, viewsets, filters, permissions
+from rest_framework import status, viewsets, permissions
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
@@ -49,6 +49,26 @@ class RecipeViewSet(viewsets.ModelViewSet):
     permission_classes = (IsAuthorOrReadOnly,)
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
+
+    def get_queryset(self):
+        queryset = Recipe.objects.all()
+
+        # Get tags parameter from request
+        tags = self.request.query_params.getlist('tags')
+
+        if tags:
+            # Import Q for OR query construction
+            from django.db.models import Q
+
+            # Build an OR filter for tags
+            tag_filter = Q()
+            for tag in tags:
+                tag_filter |= Q(tags__slug=tag)
+
+            # Apply the filter and ensure distinct results
+            queryset = queryset.filter(tag_filter).distinct()
+
+        return queryset
 
     def update(self, request, *args, **kwargs):
         """Override update method to ensure all required fields are provided."""
