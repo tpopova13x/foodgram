@@ -90,8 +90,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 )
 
             if missing_fields:
+                mes = "This field is required"
                 error_response = {
-                    field: ["This field is required"] for field in missing_fields}
+                    field: [mes] for field in missing_fields}
                 return Response(
                     error_response,
                     status=status.HTTP_400_BAD_REQUEST)
@@ -196,7 +197,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
         response = HttpResponse(
             "\n".join(shopping_list),
             content_type="text/plain")
-        response["Content-Disposition"] = "attachment; filename=shopping_list.txt"
+        response["Content-Disposition"] = "attachment; 
+        filename=shopping_list.txt"
 
         return response
 
