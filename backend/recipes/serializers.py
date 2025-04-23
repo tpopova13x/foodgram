@@ -4,7 +4,6 @@ from django.db import transaction
 from django.shortcuts import get_object_or_404
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
-
 from users.serializers import CustomUserSerializer
 
 from .models import (Favorite, Ingredient, Recipe, RecipeIngredient,
@@ -102,14 +101,6 @@ class RecipeSerializer(serializers.ModelSerializer):
         return ShoppingCart.objects.filter(
             user=request.user, recipe=obj).exists()
 
-    def get_is_in_shopping_cart(self, obj):
-        """Check if recipe is in user's shopping cart."""
-        request = self.context.get("request")
-        if not request or request.user.is_anonymous:
-            return False
-        return ShoppingCart.objects.filter(
-            user=request.user, recipe=obj).exists()
-
 
 class RecipeIngredientWriteSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField()
@@ -162,11 +153,13 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
             "cooking_time")
 
     def validate(self, data):
-        """Validate that required fields are present for both create and update operations."""
+        """Validate that required fields 
+        are present for both create and update operations."""
         # For update operations, check that ingredients are provided
         if self.instance and "ingredients" not in data:
             raise serializers.ValidationError(
-                {"ingredients": "This field is required when updating a recipe"}
+                {"ingredients": 
+                 "This field is required when updating a recipe"}
             )
 
         # Similarly for tags
