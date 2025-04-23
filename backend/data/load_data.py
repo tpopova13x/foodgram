@@ -1,9 +1,10 @@
 import csv
-from pathlib import Path
-from recipes.models import Tag
-from recipes.models import Ingredient
-from django.utils.text import slugify
 import json
+from pathlib import Path
+
+from django.utils.text import slugify
+
+from recipes.models import Ingredient, Tag
 
 csv_path = Path('data/tags.csv').resolve()
 

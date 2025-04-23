@@ -1,23 +1,21 @@
 # users/views.py
 
-from django.shortcuts import get_object_or_404
-from rest_framework import status, viewsets
-from rest_framework.decorators import action, api_view, permission_classes
-from rest_framework.exceptions import NotAuthenticated, AuthenticationFailed
-from rest_framework.permissions import IsAuthenticated, AllowAny
-from rest_framework.response import Response
 from django.contrib.auth import get_user_model
+from django.shortcuts import get_object_or_404
 from djoser.views import UserViewSet
+from rest_framework import status
+from rest_framework.decorators import action
+from rest_framework.exceptions import AuthenticationFailed, NotAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import Subscription
-from .serializers import (
-    CustomUserSerializer,
-    CustomUserCreateSerializer,
-    CustomUserResponseOnCreateSerializer,
-    SubscriptionSerializer, SetAvatarSerializer, SetAvatarResponseSerializer
-)
 from .pagination import CustomPageNumberPagination
+from .serializers import (CustomUserCreateSerializer,
+                          CustomUserResponseOnCreateSerializer,
+                          CustomUserSerializer, SetAvatarResponseSerializer,
+                          SetAvatarSerializer, SubscriptionSerializer)
 
 User = get_user_model()
 
@@ -27,7 +25,8 @@ class UserMeView(APIView):
 
     def get(self, request):
         """Return authenticated user's information."""
-        serializer = CustomUserSerializer(request.user, context={'request': request})
+        serializer = CustomUserSerializer(
+            request.user, context={'request': request})
         return Response(serializer.data)
 
     def handle_exception(self, exc):
@@ -39,12 +38,13 @@ class UserMeView(APIView):
             )
         return super().handle_exception(exc)
 
+
 class CustomUserViewSet(UserViewSet):
     """ViewSet for users."""
 
     queryset = User.objects.all()
     serializer_class = CustomUserSerializer
-    pagination_class = CustomPageNumberPagination  # Explicitly set pagination class
+    pagination_class = CustomPageNumberPagination
 
     def get_permissions(self):
         if self.action == 'create':
@@ -159,5 +159,3 @@ class CustomUserViewSet(UserViewSet):
                 user.save()
 
             return Response(status=status.HTTP_204_NO_CONTENT)
-
-

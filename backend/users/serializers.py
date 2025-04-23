@@ -1,9 +1,9 @@
 # users/serializers.py
 
-from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from djoser.serializers import UserCreateSerializer, UserSerializer
 from drf_extra_fields.fields import Base64ImageField
+from rest_framework import serializers
 
 from .models import Subscription
 
@@ -70,7 +70,8 @@ class SubscriptionSerializer(CustomUserSerializer):
     recipes_count = serializers.SerializerMethodField()
 
     class Meta(CustomUserSerializer.Meta):
-        fields = CustomUserSerializer.Meta.fields + ('recipes', 'recipes_count')
+        fields = CustomUserSerializer.Meta.fields + \
+            ('recipes', 'recipes_count')
 
     def get_recipes(self, obj):
         """Get recipes for the author with limit."""
