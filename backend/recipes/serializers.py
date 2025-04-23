@@ -153,12 +153,12 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
             "cooking_time")
 
     def validate(self, data):
-        """Validate that required fields 
+        """Validate that required fields
         are present for both create and update operations."""
         # For update operations, check that ingredients are provided
         if self.instance and "ingredients" not in data:
             raise serializers.ValidationError(
-                {"ingredients": 
+                {"ingredients":
                  "This field is required when updating a recipe"}
             )
 
