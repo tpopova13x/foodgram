@@ -67,7 +67,10 @@ class RecipeViewSet(viewsets.ModelViewSet):
         return queryset
 
     def update(self, request, *args, **kwargs):
-        """Override update method to ensure all required fields are provided."""
+        """
+        Override update method to ensure all required fields
+        are provided.
+        """
         partial = kwargs.pop("partial", False)
         instance = self.get_object()
 
@@ -197,9 +200,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
         response = HttpResponse(
             "\n".join(shopping_list),
             content_type="text/plain")
-        response["Content-Disposition"] = (
-          "attachment; filename=shopping_list.txt"
-        )
+            response["Content-Disposition"] = (
+                "attachment; filename=shopping_list.txt"
+            )
 
         return response
 
