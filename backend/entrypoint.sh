@@ -1,9 +1,6 @@
 #!/bin/bash
 set -e
 
-# Apply specific app migrations
-python3.11 manage.py migrate users
-
 # Fake-initial for already existing tables
 python3.11 manage.py migrate --fake-initial
 
