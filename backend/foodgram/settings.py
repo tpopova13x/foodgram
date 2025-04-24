@@ -10,6 +10,11 @@ load_dotenv(BASE_DIR / '.env')
 SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'default_value')
 DEBUG = os.environ.get('DJANGO_DEBUG', 'False') == 'True'
 ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+CSRF_TRUSTED_ORIGINS = os.environ.get('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
+
+CSRF_COOKIE_SECURE = True  # If using HTTPS
+CSRF_COOKIE_HTTPONLY = False  # Django needs JavaScript access
+SESSION_COOKIE_SECURE = True  # If using HTTPS
 
 # Application definition
 INSTALLED_APPS = [
