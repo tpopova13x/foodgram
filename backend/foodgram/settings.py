@@ -13,7 +13,6 @@ ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1').sp
 CSRF_TRUSTED_ORIGINS = [
     'https://myhostforfinalapp.zapto.org'
 ]
-CSRF_TRUSTED_ORIGINS = os.environ.get('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 
 CSRF_COOKIE_SECURE = True  # If using HTTPS
 CSRF_COOKIE_HTTPONLY = False  # Django needs JavaScript access
