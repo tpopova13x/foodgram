@@ -1,5 +1,4 @@
 django==4.2.7
-djangorestframework==3.14.0
 djoser==2.2.0
 pillow==10.0.1
 django-filter==23.3
@@ -48,3 +47,4 @@ pycodestyle==2.13.0
 pyflakes==3.3.2
 setuptools==79.0.0
 psycopg2-binary==2.9.9
+django-cors-headers==3.13.0
