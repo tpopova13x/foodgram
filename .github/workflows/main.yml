@@ -167,6 +167,8 @@ jobs:
           sudo docker compose -f docker-compose.production.yml exec backend python3.11 manage.py migrate
           sudo docker compose -f docker-compose.production.yml exec backend python3.11 manage.py collectstatic
           sudo docker compose -f docker-compose.production.yml exec backend cp -r /app/collected_static/. /backend_static/static/
+          pwd
+          ls
           sudo docker compose -f docker-compose.production.yml exec backend python3.11 manage.py shell < /app/data/load_data.py
   send_message:
     runs-on: ubuntu-latest
