@@ -20,8 +20,14 @@ from .serializers import (IngredientSerializer, RecipeCreateUpdateSerializer,
 
 def recipe_short_link(request, id):
     """Handle short links for recipes."""
-    recipe = get_object_or_404(Recipe, id=id)
-    return redirect(f'/#/recipes/{recipe.id}/')
+    try:
+        recipe = get_object_or_404(Recipe, id=id)
+        frontend_url = f'/#/recipes/{recipe.id}/'
+        return redirect(frontend_url)
+    except Exception:
+        return HttpResponse(
+            "Error accessing recipe. Please try again later.",
+            status=500)
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
