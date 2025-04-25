@@ -2,7 +2,7 @@
 
 from django.db.models import Sum
 from django.http import HttpResponse
-from django.shortcuts import get_object_or_404
+from django.shortcuts import get_object_or_404, redirect
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import permissions, status, viewsets
 from rest_framework.decorators import action
@@ -17,6 +17,10 @@ from .serializers import (IngredientSerializer, RecipeCreateUpdateSerializer,
                           RecipeSerializer, RecipeShortSerializer,
                           TagSerializer)
 
+def recipe_short_link(request, id):
+    """Handle short links for recipes."""
+    recipe = get_object_or_404(Recipe, id=id)
+    return redirect(f'/#/recipes/{recipe.id}/')
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
     """ViewSet for tags."""
