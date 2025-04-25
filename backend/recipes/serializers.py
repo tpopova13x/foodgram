@@ -153,30 +153,30 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
             "cooking_time")
 
     def validate(self, data):
-        """Validate that required fields
-        are present for both create and update operations."""
-        # For update operations, check that ingredients are provided
-        if self.instance and "ingredients" not in data:
-            raise serializers.ValidationError(
-                {"ingredients":
-                 "This field is required when updating a recipe"}
-            )
+        """Validate that required fields are present for both create and update operations."""
+        errors = {}
 
-        # Similarly for tags
-        if self.instance and "tags" not in data:
-            raise serializers.ValidationError(
-                {"tags": "This field is required when updating a recipe"}
-            )
+        # For update operations, check each required field individually
+        if self.instance:
+            if "ingredients" not in data:
+                errors["ingredients"] = "Ingredients are required when updating a recipe"
 
-        if "image" not in data:
-            raise serializers.ValidationError(
-                {"image": "This field is required when updating a recipe"}
-            )
-        elif not data["image"]:
-            raise serializers.ValidationError(
-                {"image": "This field may not be blank"})
+            if "tags" not in data:
+                errors["tags"] = "Tags are required when updating a recipe"
+
+            if "image" not in data:
+                errors["image"] = "Image is required when updating a recipe"
+
+        # Raise all errors at once with specific messages
+        if errors:
+            raise serializers.ValidationError(errors)
+
+        # Validate image is not blank
+        if "image" in data and not data["image"]:
+            raise serializers.ValidationError({"image": "This field may not be blank"})
 
         return super().validate(data)
+
 
     def validate_ingredients(self, value):
         """Validate ingredients."""
