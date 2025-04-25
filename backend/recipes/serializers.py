@@ -153,13 +153,15 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
             "cooking_time")
 
     def validate(self, data):
-        """Validate that required fields are present for both create and update operations."""
+        """Validate that required fields"""
+        """are present for both create and update operations."""
         errors = {}
 
         # For update operations, check each required field individually
         if self.instance:
             if "ingredients" not in data:
-                errors["ingredients"] = "Ingredients are required when updating a recipe"
+                errors["ingredients"] = \
+                    "Ingredients are required when updating a recipe"
 
             if "tags" not in data:
                 errors["tags"] = "Tags are required when updating a recipe"
@@ -173,10 +175,10 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
 
         # Validate image is not blank
         if "image" in data and not data["image"]:
-            raise serializers.ValidationError({"image": "This field may not be blank"})
+            raise serializers.ValidationError({
+                "image": "This field may not be blank"})
 
         return super().validate(data)
-
 
     def validate_ingredients(self, value):
         """Validate ingredients."""

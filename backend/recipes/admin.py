@@ -1,18 +1,13 @@
 # recipes/admin.py
 
-from django.contrib import admin
-from django.db.models import Count
-
-from .models import (Favorite, Ingredient, Recipe, RecipeIngredient,
-                     ShoppingCart, Tag)
-
 # recipes/admin.py
 from django.contrib import admin
-from django.db.models import Count
 from django.core.exceptions import ValidationError
+from django.db.models import Count
 
 from .models import (Favorite, Ingredient, Recipe, RecipeIngredient,
                      ShoppingCart, Tag)
+
 
 class RecipeIngredientInline(admin.TabularInline):
     """Inline admin for RecipeIngredient model."""
@@ -21,6 +16,7 @@ class RecipeIngredientInline(admin.TabularInline):
     min_num = 1
     extra = 1
     autocomplete_fields = ("ingredient",)
+
 
 @admin.register(Recipe)
 class RecipeAdmin(admin.ModelAdmin):
@@ -31,7 +27,6 @@ class RecipeAdmin(admin.ModelAdmin):
     list_filter = ("tags",)
     inlines = (RecipeIngredientInline,)
     readonly_fields = ("favorites_count",)
-
 
     def get_queryset(self, request):
         """Add favorites count to queryset."""
@@ -52,7 +47,8 @@ class RecipeAdmin(admin.ModelAdmin):
         recipe = form.instance
         if not RecipeIngredient.objects.filter(recipe=recipe).exists():
             # If no ingredients exist, raise a validation error
-            raise ValidationError("A recipe must have at least one ingredient.")
+            raise ValidationError(
+                "A recipe must have at least one ingredient.")
 
 
 @admin.register(Tag)

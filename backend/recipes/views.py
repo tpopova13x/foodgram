@@ -17,10 +17,12 @@ from .serializers import (IngredientSerializer, RecipeCreateUpdateSerializer,
                           RecipeSerializer, RecipeShortSerializer,
                           TagSerializer)
 
+
 def recipe_short_link(request, id):
     """Handle short links for recipes."""
     recipe = get_object_or_404(Recipe, id=id)
     return redirect(f'/#/recipes/{recipe.id}/')
+
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
     """ViewSet for tags."""
