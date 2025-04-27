@@ -1,12 +1,25 @@
 # recipes/admin.py
 
-# recipes/admin.py
 from django.contrib import admin
 from django.core.exceptions import ValidationError
 from django.db.models import Count
+from django.forms import BaseInlineFormSet
 
 from .models import (Favorite, Ingredient, Recipe, RecipeIngredient,
                      ShoppingCart, Tag)
+
+
+class IngredientInlineFormSet(BaseInlineFormSet):
+    def clean(self):
+        super().clean()
+        total_count = 0
+
+        for form in self.forms:
+            if form.cleaned_data and not form.cleaned_data.get('DELETE'):
+                total_count += 1
+
+        if total_count == 0:
+            raise ValidationError('Recipe must have at least one ingredient.')
 
 
 class RecipeIngredientInline(admin.TabularInline):
@@ -15,6 +28,7 @@ class RecipeIngredientInline(admin.TabularInline):
     model = RecipeIngredient
     min_num = 1
     extra = 1
+    formset = IngredientInlineFormSet
     autocomplete_fields = ("ingredient",)
 
 
