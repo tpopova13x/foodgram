@@ -157,7 +157,6 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
         """are present for both create and update operations."""
         errors = {}
 
-        # For update operations, check each required field individually
         if self.instance:
             if "ingredients" not in data:
                 errors["ingredients"] = \
@@ -166,17 +165,11 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
             if "tags" not in data:
                 errors["tags"] = "Tags are required when updating a recipe"
 
-            if "image" not in data:
-                errors["image"] = "Image is required when updating a recipe"
+        elif "image" not in data:
+            errors["image"] = "Image is required when creating a recipe"
 
-        # Raise all errors at once with specific messages
         if errors:
             raise serializers.ValidationError(errors)
-
-        # Validate image is not blank
-        if "image" in data and not data["image"]:
-            raise serializers.ValidationError({
-                "image": "This field may not be blank"})
 
         return super().validate(data)
 
@@ -260,17 +253,18 @@ class RecipeCreateUpdateSerializer(serializers.ModelSerializer):
         tags = validated_data.pop("tags", None)
         ingredients_data = validated_data.pop("ingredients", None)
 
-        # Update recipe fields
         for attr, value in validated_data.items():
-            setattr(instance, attr, value)
+            if attr == 'image' and value:
+                setattr(instance, attr, value)
+            elif attr != 'image':
+                setattr(instance, attr, value)
+
         instance.save()
 
-        # Update tags if provided
         if tags is not None:
             instance.tags.clear()
             instance.tags.set(tags)
 
-        # Update ingredients if provided
         if ingredients_data is not None:
             instance.recipe_ingredients.all().delete()
             self.create_ingredients(instance, ingredients_data)
