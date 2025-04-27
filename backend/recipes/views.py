@@ -20,9 +20,9 @@ from .serializers import (IngredientSerializer, RecipeCreateUpdateSerializer,
 
 def recipe_short_link(request, id):
     """Handle short links for recipes."""
+    recipe = get_object_or_404(Recipe, id=id)
     try:
-        recipe = get_object_or_404(Recipe, id=id)
-        frontend_url = f'/#/recipes/{recipe.id}/'
+        frontend_url = f'/recipes/{recipe.id}/'
         return redirect(frontend_url)
     except Exception:
         return HttpResponse(
