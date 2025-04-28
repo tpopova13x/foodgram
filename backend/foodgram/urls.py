@@ -8,9 +8,7 @@ from recipes.views import recipe_short_link
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/', include('users.urls')),
-    path('api/', include('recipes.urls')),
-    path('api/auth/', include('djoser.urls.authtoken')),
+    path('api/v1/', include(('api.v1.urls', 'v1'), namespace='v1')),
     path('s/<int:id>/', recipe_short_link, name='recipe_short_link'),
 ]
 
