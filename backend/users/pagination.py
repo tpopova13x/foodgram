@@ -1,4 +1,3 @@
-# Create a new file: core/pagination.py
 
 from rest_framework.pagination import PageNumberPagination
 
