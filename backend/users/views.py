@@ -29,15 +29,6 @@ class UserMeView(APIView):
             request.user, context={'request': request})
         return Response(serializer.data)
 
-    def handle_exception(self, exc):
-        # Override handle_exception to return 401 for authentication errors
-        if isinstance(exc, (NotAuthenticated, AuthenticationFailed)):
-            return Response(
-                {"detail": "Authentication credentials were not provided."},
-                status=status.HTTP_401_UNAUTHORIZED
-            )
-        return super().handle_exception(exc)
-
 
 class CustomUserViewSet(UserViewSet):
     """ViewSet for users."""
