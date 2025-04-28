@@ -28,7 +28,7 @@ def recipe_short_link(id):
     except Exception:
         return HttpResponse(
             "Error accessing recipe. Please try again later.",
-            status=500)
+            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
