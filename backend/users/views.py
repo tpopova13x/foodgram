@@ -10,12 +10,12 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import Subscription
 from .pagination import CustomPageNumberPagination
 from .serializers import (CustomUserCreateSerializer,
                           CustomUserResponseOnCreateSerializer,
                           CustomUserSerializer, SetAvatarResponseSerializer,
-                          SetAvatarSerializer, SubscriptionSerializer)
+                          SetAvatarSerializer, SubscriptionCreateSerializer,
+                          SubscriptionDeleteSerializer, SubscriptionSerializer)
 
 User = get_user_model()
 
@@ -71,38 +71,28 @@ class CustomUserViewSet(UserViewSet):
     def subscribe(self, request, id=None):
         """Subscribe/unsubscribe from author."""
         author = get_object_or_404(User, id=id)
-        user = request.user
 
         if request.method == 'POST':
-            if user == author:
-                return Response(
-                    {'error': 'You cannot subscribe to yourself'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
+            serializer = SubscriptionCreateSerializer(
+                data=request.data,
+                context={'request': request, 'author': author}
+            )
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
 
-            if Subscription.objects.filter(user=user, author=author).exists():
-                return Response(
-                    {'error': 'You are already subscribed to this author'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-
-            Subscription.objects.create(user=user, author=author)
-            serializer = SubscriptionSerializer(
+            response_serializer = SubscriptionSerializer(
                 author, context={'request': request}
             )
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return Response(response_serializer.data,
+                            status=status.HTTP_201_CREATED)
 
         if request.method == 'DELETE':
-            subscription = Subscription.objects.filter(
-                user=user, author=author
+            serializer = SubscriptionDeleteSerializer(
+                data=request.data,
+                context={'request': request, 'author': author}
             )
-            if not subscription.exists():
-                return Response(
-                    {'error': 'You are not subscribed to this author'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-
-            subscription.delete()
+            serializer.is_valid(raise_exception=True)
+            serializer.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(

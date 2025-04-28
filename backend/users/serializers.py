@@ -10,6 +10,54 @@ from .models import Subscription
 User = get_user_model()
 
 
+class SubscriptionDeleteSerializer(serializers.Serializer):
+    """Serializer for deleting a subscription."""
+
+    def validate(self, attrs):
+        request = self.context.get('request')
+        user = request.user
+        author = self.context.get('author')
+
+        subscription = Subscription.objects.filter(user=user, author=author)
+        if not subscription.exists():
+            raise serializers.ValidationError(
+                'You are not subscribed to this author'
+            )
+
+        self.subscription = subscription.first()
+        return attrs
+
+    def delete(self):
+        self.subscription.delete()
+
+
+class SubscriptionCreateSerializer(serializers.Serializer):
+    """Serializer for creating a subscription."""
+
+    def validate(self, attrs):
+        request = self.context.get('request')
+        user = request.user
+        author = self.context.get('author')
+
+        if user == author:
+            raise serializers.ValidationError(
+                'You cannot subscribe to yourself'
+            )
+
+        if Subscription.objects.filter(user=user, author=author).exists():
+            raise serializers.ValidationError(
+                'You are already subscribed to this author'
+            )
+
+        return attrs
+
+    def create(self, validated_data):
+        user = self.context['request'].user
+        author = self.context['author']
+        subscription = Subscription.objects.create(user=user, author=author)
+        return subscription
+
+
 class CustomUserCreateSerializer(UserCreateSerializer):
     """Serializer for user registration."""
 
