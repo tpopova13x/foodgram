@@ -14,7 +14,7 @@ services:
       - pg_data:/var/lib/postgresql/data
 
   backend:
-    image: tpopova/foodgram_backend
+    image: tpopova/foodgram_backend:latest
     env_file: .env
     depends_on:
       - db
@@ -24,12 +24,12 @@ services:
 
   frontend:
     env_file: .env
-    image: tpopova/foodgram_frontend
+    image: tpopova/foodgram_frontend:latest
     volumes:
       - static:/app/result_build/
 
   gateway:
-    image: tpopova/foodgram_gateway
+    image: tpopova/foodgram_gateway:latest
     env_file: .env
     volumes:
       - static:/static
