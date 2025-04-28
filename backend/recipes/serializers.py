@@ -7,7 +7,7 @@ from rest_framework import serializers
 from users.serializers import CustomUserSerializer
 
 from .models import (Favorite, Ingredient, Recipe, RecipeIngredient,
-                     ShoppingCart, Tag)
+                     ShoppingCart, Tag, User)
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -289,3 +289,78 @@ class RecipeShortSerializer(serializers.ModelSerializer):
                 return request.build_absolute_uri(obj.image.url)
             return obj.image.url
         return ""  # Return empty string if no image
+
+
+class FavoriteCreateSerializer(serializers.ModelSerializer):
+    """Serializer for adding a recipe to favorites."""
+
+    class Meta:
+        model = Favorite
+        fields = ("user", "recipe")
+        validators = [
+            serializers.UniqueTogetherValidator(
+                queryset=Favorite.objects.all(),
+                fields=("user", "recipe"),
+                message="Recipe is already in favorites"
+            )
+        ]
+
+
+class FavoriteDeleteSerializer(serializers.Serializer):
+    """Serializer for removing a recipe from favorites."""
+    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    recipe = serializers.PrimaryKeyRelatedField(queryset=Recipe.objects.all())
+
+    def validate(self, data):
+        user = data['user']
+        recipe = data['recipe']
+
+        if not Favorite.objects.filter(user=user, recipe=recipe).exists():
+            raise serializers.ValidationError("Recipe is not in favorites.")
+
+        return data
+
+    def delete(self):
+        user = self.validated_data['user']
+        recipe = self.validated_data['recipe']
+        Favorite.objects.filter(user=user, recipe=recipe).delete()
+
+
+class ShoppingCartCreateSerializer(serializers.Serializer):
+    """Serializer for adding a recipe to the shopping cart."""
+    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    recipe = serializers.PrimaryKeyRelatedField(queryset=Recipe.objects.all())
+
+    def validate(self, data):
+        user = data['user']
+        recipe = data['recipe']
+
+        if ShoppingCart.objects.filter(user=user, recipe=recipe).exists():
+            raise serializers.ValidationError(
+                "Recipe is already in shopping cart.")
+
+        return data
+
+    def create(self, validated_data):
+        return ShoppingCart.objects.create(**validated_data)
+
+
+class ShoppingCartDeleteSerializer(serializers.Serializer):
+    """Serializer for removing a recipe from the shopping cart."""
+    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    recipe = serializers.PrimaryKeyRelatedField(queryset=Recipe.objects.all())
+
+    def validate(self, data):
+        user = data['user']
+        recipe = data['recipe']
+
+        if not ShoppingCart.objects.filter(user=user, recipe=recipe).exists():
+            raise serializers.ValidationError(
+                "Recipe is not in shopping cart.")
+
+        return data
+
+    def delete(self):
+        user = self.validated_data['user']
+        recipe = self.validated_data['recipe']
+        ShoppingCart.objects.filter(user=user, recipe=recipe).delete()

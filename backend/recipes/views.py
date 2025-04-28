@@ -10,15 +10,16 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from .filters import IngredientFilter, RecipeFilter
-from .models import (Favorite, Ingredient, Recipe, RecipeIngredient,
-                     ShoppingCart, Tag)
+from .models import Ingredient, Recipe, RecipeIngredient, Tag
 from .permissions import IsAuthorOrReadOnly
-from .serializers import (IngredientSerializer, RecipeCreateUpdateSerializer,
+from .serializers import (FavoriteCreateSerializer, FavoriteDeleteSerializer,
+                          IngredientSerializer, RecipeCreateUpdateSerializer,
                           RecipeSerializer, RecipeShortSerializer,
-                          TagSerializer)
+                          ShoppingCartCreateSerializer,
+                          ShoppingCartDeleteSerializer, TagSerializer)
 
 
-def recipe_short_link(request, id):
+def recipe_short_link(id):
     """Handle short links for recipes."""
     recipe = get_object_or_404(Recipe, id=id)
     try:
@@ -143,48 +144,54 @@ class RecipeViewSet(viewsets.ModelViewSet):
         user = request.user
 
         if request.method == "POST":
-            if Favorite.objects.filter(user=user, recipe=recipe).exists():
-                return Response(
-                    {"errors": "Recipe is already in favorites"},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
+            serializer = FavoriteCreateSerializer(
+                data={"user": user.id, "recipe": recipe.id},
+                context={"request": request}
+            )
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
 
-            Favorite.objects.create(user=user, recipe=recipe)
-            serializer = RecipeShortSerializer(recipe)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            short_serializer = RecipeShortSerializer(
+                recipe, context=self.get_serializer_context())
+            return Response(
+                short_serializer.data, status=status.HTTP_201_CREATED)
+
         if request.method == "DELETE":
-            favorite = Favorite.objects.filter(user=user, recipe=recipe)
-            if not favorite.exists():
-                return Response(
-                    {"errors": "Recipe is not in favorites"},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-            favorite.delete()
+            serializer = FavoriteDeleteSerializer(
+                data={"user": user.id, "recipe": recipe.id},
+                context={"request": request}
+            )
+            serializer.is_valid(raise_exception=True)
+            serializer.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=True, methods=["post", "delete"],
             permission_classes=[IsAuthenticated])
     def shopping_cart(self, request, pk=None):
-        """Add/remove recipe from shopping cart."""
+        """Add or remove a recipe from the shopping cart."""
         recipe = get_object_or_404(Recipe, id=pk)
         user = request.user
+
         if request.method == "POST":
-            if ShoppingCart.objects.filter(user=user, recipe=recipe).exists():
-                return Response(
-                    {"errors": "Recipe is already in shopping cart"},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-            ShoppingCart.objects.create(user=user, recipe=recipe)
-            serializer = RecipeShortSerializer(recipe)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            serializer = ShoppingCartCreateSerializer(
+                data={"user": user.id, "recipe": recipe.id},
+                context={"request": request}
+            )
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+
+            short_serializer = RecipeShortSerializer(
+                recipe, context=self.get_serializer_context())
+            return Response(short_serializer.data,
+                            status=status.HTTP_201_CREATED)
+
         if request.method == "DELETE":
-            cart = ShoppingCart.objects.filter(user=user, recipe=recipe)
-            if not cart.exists():
-                return Response(
-                    {"errors": "Recipe is not in shopping cart"},
-                    status=status.HTTP_400_BAD_REQUEST,
-                )
-            cart.delete()
+            serializer = ShoppingCartDeleteSerializer(
+                data={"user": user.id, "recipe": recipe.id},
+                context={"request": request}
+            )
+            serializer.is_valid(raise_exception=True)
+            serializer.delete()
             return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(detail=False, methods=["get"],
