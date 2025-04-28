@@ -8,24 +8,28 @@ from django.db import models
 class User(AbstractUser):
     """Custom User model for Foodgram project."""
 
+    MAX_EMAIL_LENGTH = 254
+    MAX_USERNAME_LENGTH = 150
+    MAX_NAME_LENGTH = 150
+
     email = models.EmailField(
         'Email',
-        max_length=254,
+        max_length=MAX_EMAIL_LENGTH,
         unique=True,
     )
     username = models.CharField(
         'Username',
-        max_length=150,
+        max_length=MAX_USERNAME_LENGTH,
         unique=True,
         validators=[UnicodeUsernameValidator()],
     )
     first_name = models.CharField(
         'First name',
-        max_length=150,
+        max_length=MAX_NAME_LENGTH,
     )
     last_name = models.CharField(
         'Last name',
-        max_length=150,
+        max_length=MAX_NAME_LENGTH,
     )
     avatar = models.ImageField(
         'Avatar',
