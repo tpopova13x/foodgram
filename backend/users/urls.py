@@ -13,7 +13,6 @@ urlpatterns = [
         'users/me/',
         UserMeView.as_view(),
         name='user-me'),
-    # Custom me endpoint
     path('', include(router.urls)),
     path('', include('djoser.urls')),
 ]
