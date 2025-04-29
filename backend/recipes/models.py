@@ -4,6 +4,8 @@ from django.contrib.auth import get_user_model
 from django.core.validators import MinValueValidator, RegexValidator
 from django.db import models
 
+from backend.recipes.constants import MAX_LENGTH
+
 User = get_user_model()
 
 
@@ -12,12 +14,12 @@ class Tag(models.Model):
 
     name = models.CharField(
         "Name",
-        max_length=200,
+        max_length=MAX_LENGTH,
         unique=True,
     )
     slug = models.SlugField(
         "Slug",
-        max_length=200,
+        max_length=MAX_LENGTH,
         unique=True,
         validators=[
             RegexValidator(
@@ -41,11 +43,11 @@ class Ingredient(models.Model):
 
     name = models.CharField(
         "Name",
-        max_length=200,
+        max_length=MAX_LENGTH,
     )
     measurement_unit = models.CharField(
         "Measurement unit",
-        max_length=200,
+        max_length=MAX_LENGTH,
     )
 
     class Meta:
@@ -74,7 +76,7 @@ class Recipe(models.Model):
     )
     name = models.CharField(
         "Name",
-        max_length=200,
+        max_length=MAX_LENGTH,
     )
     image = models.ImageField(
         "Image",
@@ -150,59 +152,44 @@ class RecipeIngredient(models.Model):
         return f"{self.recipe}: {self.ingredient} - {self.amount}"
 
 
-class Favorite(models.Model):
-    """Model for favorite recipes."""
+class UserRecipeRelation(models.Model):
+    """Abstract model for user-recipe relations."""
 
     user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
-        related_name="favorites",
         verbose_name="User",
     )
     recipe = models.ForeignKey(
         Recipe,
         on_delete=models.CASCADE,
-        related_name="favorited_by",
         verbose_name="Recipe",
     )
 
     class Meta:
-        verbose_name = "Favorite"
-        verbose_name_plural = "Favorites"
+        abstract = True
         constraints = [
             models.UniqueConstraint(
                 fields=["user", "recipe"],
-                name="unique_favorite")
-        ]
-
-    def __str__(self):
-        return f"{self.user} likes {self.recipe}"
-
-
-class ShoppingCart(models.Model):
-    """Model for shopping cart."""
-
-    user = models.ForeignKey(
-        User,
-        on_delete=models.CASCADE,
-        related_name="shopping_cart",
-        verbose_name="User",
-    )
-    recipe = models.ForeignKey(
-        Recipe,
-        on_delete=models.CASCADE,
-        related_name="in_shopping_cart",
-        verbose_name="Recipe",
-    )
-
-    class Meta:
-        verbose_name = "Shopping cart item"
-        verbose_name_plural = "Shopping cart items"
-        constraints = [
-            models.UniqueConstraint(
-                fields=["user", "recipe"], name="unique_shopping_cart"
+                name="%(class)s_unique_user_recipe"
             )
         ]
 
     def __str__(self):
-        return f"{self.user} added {self.recipe} to shopping cart"
+        return f"{self.user} - {self.recipe}"
+
+
+class Favorite(UserRecipeRelation):
+    """Model for favorite recipes."""
+
+    class Meta(UserRecipeRelation.Meta):
+        verbose_name = "Favorite"
+        verbose_name_plural = "Favorites"
+
+
+class ShoppingCart(UserRecipeRelation):
+    """Model for shopping cart."""
+
+    class Meta(UserRecipeRelation.Meta):
+        verbose_name = "Shopping cart item"
+        verbose_name_plural = "Shopping cart items"
