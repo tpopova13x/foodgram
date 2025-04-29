@@ -7,10 +7,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 load_dotenv(BASE_DIR / '.env')
 
-SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY')
-if not SECRET_KEY:
-    raise ValueError("DJANGO_SECRET_KEY is not set in environment variables")
-
+SECRET_KEY = os.environ.get('DJANGO_SECRET_KEY', 'django-insecure-1+7by7)v&6txdd$cwro#4lf2+o9%am4(nx$s@51#6=*3e5lp1*')
 DEBUG = os.environ.get('DJANGO_DEBUG', 'false').lower() == 'true'
 ALLOWED_HOSTS = os.environ.get('DJANGO_ALLOWED_HOSTS', 'localhost,127.0.0.1').split(',')
 CSRF_TRUSTED_ORIGINS = os.getenv("CSRF_TRUSTED_ORIGINS", "").split(",")
